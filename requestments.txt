@@ -1,0 +1,6 @@
+aiohttp
+aiosqlite
+apscheduler
+quart
+hypercorn
+aiofiles
