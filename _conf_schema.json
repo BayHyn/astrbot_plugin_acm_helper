@@ -1,0 +1,28 @@
+{
+  "webui_port": {
+    "description": "网页仪表盘的端口号", "type": "int", "default": 8088
+  },
+  "notification_group_id": {
+    "description": "【重要】接收小时榜播报的QQ群号", "type": "string"
+  },
+  "luogu_cookie": {
+    "description": "【洛谷-必填】Cookie",
+    "type": "string",
+    "hint": "从浏览器(登录洛谷后)开发者工具中获取，否则无法同步洛谷。"
+  },
+  "luogu_csrf_token": {
+    "description": "【洛谷-必填】x-csrf-token",
+    "type": "string",
+    "hint": "同样从浏览器开发者工具的请求头中获取。"
+  },
+  "cf_api_key": {
+    "description": "【CF-可选】API Key",
+    "type": "string",
+    "hint": "用于提高CF的API请求频率限制，没有可不填。"
+  },
+  "cf_api_secret": {
+    "description": "【CF-可选】API Secret",
+    "type": "string",
+    "hint": "与API Key配对使用，没有可不填。"
+  }
+}
