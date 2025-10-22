@@ -147,7 +147,7 @@ class AcmHelperPlugin(Star):
         group_id = await self.get_setting("notification_group_id")
         if not group_id: logger.warning("[小时榜] 无法发送，未配置群号。"); return
         try:
-            qq_platform = self.context.get_platform("qq")
+            qq_platform = self.context.get_platform("aiocqhttp")
             if not qq_platform: logger.error("[小时榜] 无法获取 QQ 平台实例。"); return
             bot = qq_platform.bot
             onebot_message = [{"type": "text", "data": {"text": message_to_send}}]
