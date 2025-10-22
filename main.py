@@ -108,14 +108,17 @@ class AcmHelperPlugin(Star):
         if self.webui_process.is_alive(): self.webui_process.kill()
         self.webui_process = None; logger.info("WebUI 子进程已终止。"); return "✅ 管理后台已关闭。"
 
-    async def _generate_hourly_report_message(self) -> str:
+    async def _generate_hourly_report_message(self, hours: int = 1) -> str:
         limit = int(await self.get_setting('hourly_report_limit', 10))
-        time_since = int(time.time()) - 3600
+        time_since = int(time.time()) - (hours * 3600)
+        #query = "SELECT s.problem_name, s.platform, s.problem_rating, s.problem_url, s.submit_time, u.name as user_name FROM submissions s JOIN users u ON s.user_qq_id = u.qq_id WHERE s.submit_time >= ? ORDER BY s.submit_time DESC LIMIT ?"
         query = "SELECT s.problem_name, s.platform, s.problem_rating, s.problem_url, s.submit_time, u.name as user_name FROM submissions s JOIN users u ON s.user_qq_id = u.qq_id WHERE s.submit_time >= ? ORDER BY s.submit_time DESC LIMIT ?"
         async with self.db.execute(query, (time_since, limit)) as cursor:
             recent_solves = await cursor.fetchall()
-        if not recent_solves: return "过去一小时内没有新的过题记录哦～"
-        parts = [f"📖 过去一小时内过题速报 (Top {len(recent_solves)}):"]
+        title_hour_str = f"过去 {hours} 小时内" if hours > 1 else "过去一小时内"
+        if not recent_solves:
+            return f"{title_hour_str}没有新的过题记录哦～"
+        parts = [f"📖 {title_hour_str}过题速报 (Top {len(recent_solves)}):"]
         for solve in recent_solves:
             time_str = time.strftime('%H:%M', time.localtime(solve['submit_time']))
             parts.append(f"\n👤 {solve['user_name']} 在 {time_str} 通过了\n💻 {solve['platform']} - {solve['problem_name']}\n📈 难度: {solve['problem_rating'] or 'N/A'}\n🔗 {solve['problem_url']}")
@@ -142,7 +145,7 @@ class AcmHelperPlugin(Star):
         logger.info("[智能同步] 本次周期任务完成。")
 
     async def report_hourly_solves(self):
-        message_to_send = await self._generate_hourly_report_message()
+        message_to_send = await self._generate_hourly_report_message(hours=1)
         if "没有新的过题记录" in message_to_send: logger.info("[小时榜] 无新记录。"); return
         group_id = await self.get_setting("notification_group_id")
         if not group_id: logger.warning("[小时榜] 无法发送，未配置群号。"); return
@@ -256,7 +259,18 @@ class AcmHelperPlugin(Star):
     
     @acm_manager.command("hourly")
     async def cmd_report_hourly(self, event: AstrMessageEvent):
-        yield event.plain_result("正在查询过去一小时的过题记录..."); report_message = await self._generate_hourly_report_message(); yield event.plain_result(report_message)
+        cmd_parts = event.message_str.strip().split()
+        hours = 1 # 默认1小时
+        if len(cmd_parts) > 2 and cmd_parts[2].isdigit():
+            custom_hours = int(cmd_parts[2])
+            if 1 <= custom_hours <= 256: # 设置1-24小时的合理范围
+                hours = custom_hours
+            else:
+                yield event.plain_result("⚠️ 小时数必须在 1 到 255 之间。")
+                return
+        yield event.plain_result(f"正在查询过去 {hours} 小时的过题记录...")
+        report_message = await self._generate_hourly_report_message(hours=hours)
+        yield event.plain_result(report_message)
     
     @acm_manager.command("contest")
     async def cmd_get_contests(self, event: AstrMessageEvent):
@@ -418,7 +432,7 @@ class AcmHelperPlugin(Star):
     async def cmd_sql_sync(self, event: AstrMessageEvent):
         cmd_parts = event.message_str.strip().split()
         if len(cmd_parts) < 3 or not cmd_parts[2].isdigit(): yield event.plain_result("⚠️ 格式错误。\n用法: /acm sql <天数>"); return
-        days = min(int(cmd_parts[2]), 30)
+        days = max(0,min(int(cmd_parts[2]), 114514))
         yield event.plain_result(f"收到指令！正在为所有用户执行【{days}天深度同步】，请耐心等待...")
         async with self.db.execute("SELECT qq_id FROM users") as cursor: all_users = await cursor.fetchall()
         for user_row in all_users: await self.sync_single_user_for_days(user_row['qq_id'], days)
