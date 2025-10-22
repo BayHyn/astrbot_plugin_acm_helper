@@ -47,3 +47,4 @@ venv.bak/
 *.log
 
 data/
+data/acm_helper.db

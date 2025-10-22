@@ -1,22 +1,14 @@
 # ACM Helper - ACM 训练助手
 
-[
+[![Stars](https://img.shields.io/github/stars/Suzakudry/astrbot-plugin-acm-helper?style=flat-square&label=Stars)](https://github.com/Suzakudry/astrbot-plugin-acm-helper)
+[![Version](https://img.shields.io/badge/Version-1.0.0-blue.svg?style=flat-square)](https://github.com/Suzakudry/astrbot-plugin-acm-helper)
+[![License](https://img.shields.io/github/license/Suzakudry/astrbot-plugin-acm-helper?style=flat-square)](https://github.com/Suzakudry/astrbot-plugin-acm-helper/blob/main/LICENSE)
 
-![Stars](https://img.shields.io/github/stars/Suzakudry/astrbot-plugin-acm-helper?style=flat-square&label=Stars)
+一款为 [AstrBot](https://github.com/soulter/AstrBot) 设计的、功能强大的 ACM 训练辅助插件。
 
-](https://github.com/Suzakudry/astrbot-plugin-acm-helper)
-[
+它能够自动追踪成员在 Codeforces 和洛谷的刷题动态，提供实时排名，并通过一个直观的 WebUI 排行榜进行管理。
 
-![Version](https://img.shields.io/badge/Version-1.0.0-blue.svg?style=flat-square)
-
-](https://github.com/Suzakudry/astrbot-plugin-acm-helper)
-[
-
-![License](https://img.shields.io/github/license/Suzakudry/astrbot-plugin-acm-helper?style=flat-square)
-
-](https://github.com/Suzakudry/astrbot-plugin-acm-helper/blob/main/LICENSE)
-
-一款为 [AstrBot](https://github.com/soulter/AstrBot) 设计的、功能强大的 ACM 训练辅助插件。它能够自动追踪成员在 Codeforces 和洛谷的刷题动态，提供实时排名，并通过一个直观的 WebUI 后台进行管理。让每一次提交，都留下印记。
+让每一次提交，都留下印记。
 
 
 
@@ -39,16 +31,15 @@
     *   查询近期 CF 比赛: `/acm contest`
 *   **🔧 高度可配置**: 管理员可通过命令轻松设置播报开关、目标群聊和播报时间。
 
-## 📸 效果演示
-
-
-
-**排行榜示例:**
 
 
 
 
-**WebUI 管理后台:**
+
+
+
+
+
 
 
 
@@ -96,34 +87,40 @@
 ## 📖 使用说明 (命令大全)
 
 ### 🏆 查询与排行 (所有人可用)
+| 命令 | 功能说明 | 示例 |
+| :--- | :--- | :--- |
+| `/acm rating <CF Handle>` | 查询指定 Codeforces 用户的 Rating。 | `/acm rating tourist` |
+| `/acm contest` | 获取近期 Codeforces 比赛列表。 | `/acm contest` |
+| `/acm rank` | 显示近7日刷题量**周榜**。 | `/acm rank` |
+| `/acm rank all` | 显示生涯总刷题量**总榜**。 | `/acm rank all` |
+| `/acm hourly` | 手动触发一次**小时榜**播报。 | `/acm hourly` |
+| `/acm 总榜` | 显示已统计总刷题量**总榜**。 | `/acm 总榜` |
+| `/acm past <N天数>` | 显示近N日刷题量**周榜**。 | `/acm past 7` |
+| `/acm 过题 <身份限制> <天数>` | 显示某个身份的用户近N日刷题量**周榜**。天数不指定时默认为7天。 | `/acm 过题 退役`<br/>`/acm 过题 退役 114514` |
+| `/acm 查询 <qq号>` | 查询某个用户的最近20次过题 | `/acm 查询 114514` |
 
-| 命令                          | 功能说明                             | 示例                      |
-| :---------------------------- | :----------------------------------- | :------------------------ |
-| `/acm rating <CF Handle>`     | 查询指定 Codeforces 用户的 Rating。  | `/acm rating tourist`     |
-| `/acm contest`                | 获取近期 Codeforces 比赛列表。       | `/acm contest`            |
-| `/acm rank`                   | 显示近7日刷题量**周榜**。            | `/acm rank`               |
-| `/acm rank all`               | 显示生涯总刷题量**总榜**。           | `/acm rank all`           |
-| `/acm hourly`                 | 手动触发一次**小时榜**播报。         | `/acm hourly`             |
 
 ### ⚙️ 管理员后台与设置 (仅限管理员)
+| 命令 | 功能说明 | 示例 |
+| :--- | :--- | :--- |
+| `/acm 后台启动` | 启动 WebUI 管理后台。 | `/acm 后台启动` |
+| `/acm 后台关闭` | 关闭 WebUI 管理后台。 | `/acm 后台关闭` |
+| `/acm set group <群号>` | 设置定时播报的目标QQ群。 | `/acm set group 123456789` |
+| `/acm set cron <小时> <分钟>` | 设置定时播报时间 (CRON格式)。 | `/acm set cron 8-23 0` |
+| `/acm report <on/off>` | 开启或关闭所有定时播报。 | `/acm report on` |
+| `/acm status` | 查看插件当前所有配置状态。 | `/acm status` |
+| `/acm set hourly_limit <N>` | 设置小时榜速报上限个数 | `/acm set hourly_limit 20` |
 
-| 命令                          | 功能说明                             | 示例                      |
-| :---------------------------- | :----------------------------------- | :------------------------ |
-| `/acm 后台启动`               | 启动 WebUI 管理后台。                | `/acm 后台启动`           |
-| `/acm 后台关闭`               | 关闭 WebUI 管理后台。                | `/acm 后台关闭`           |
-| `/acm set group <群号>`       | 设置定时播报的目标QQ群。             | `/acm set group 123456789` |
-| `/acm set cron <小时> <分钟>` | 设置定时播报时间 (CRON格式)。        | `/acm set cron 8-23 0`    |
-| `/acm report <on/off>`        | 开启或关闭所有定时播报。             | `/acm report on`          |
-| `/acm status`                 | 查看插件当前所有配置状态。           | `/acm status`             |
 
 ### 👤 用户数据管理 (仅限管理员)
-
-| 命令                          | 功能说明                             | 示例                      |
-| :---------------------------- | :----------------------------------- | :------------------------ |
-| `/acm sync_user <QQ号>`       | 手动同步指定用户的刷题数据。         | `/acm sync_user 987654321` |
-| `/acm del_user <QQ号>`        | **永久删除**指定用户及所有数据。     | `/acm del_user 987654321` |
+| 命令 | 功能说明 | 示例 |
+| :--- | :--- | :--- |
+| `/acm sync_user <QQ号>` | 手动同步指定用户的刷题数据。 | `/acm sync_user 987654321` |
+| `/acm del_user <QQ号>` | **永久删除**指定用户及所有数据。 | `/acm del_user 987654321` |
+| `/acm sql <N天数>` | **为所有用户执行一次N天的深度同步。网络资源调度大。** | `/acm sql 20` |
 
 ---
+
 
 ## 📝 未来计划 (TODO)
 
