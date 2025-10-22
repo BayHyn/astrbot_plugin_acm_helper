@@ -93,7 +93,7 @@
 | `/acm contest` | 获取近期 Codeforces 比赛列表。 | `/acm contest` |
 | `/acm rank` | 显示近7日刷题量**周榜**。 | `/acm rank` |
 | `/acm rank all` | 显示生涯总刷题量**总榜**。 | `/acm rank all` |
-| `/acm hourly` | 手动触发一次**小时榜**播报。 | `/acm hourly` |
+| `/acm hourly` | 手动触发一次**小时榜**播报。默认一小时，支持指定小时数。 | `/acm hourly` `/acm hourly 255`|
 | `/acm 总榜` | 显示已统计总刷题量**总榜**。 | `/acm 总榜` |
 | `/acm past <N天数>` | 显示近N日刷题量**周榜**。 | `/acm past 7` |
 | `/acm 过题 <身份限制> <天数>` | 显示某个身份的用户近N日刷题量**周榜**。天数不指定时默认为7天。 | `/acm 过题 退役`<br/>`/acm 过题 退役 114514` |
