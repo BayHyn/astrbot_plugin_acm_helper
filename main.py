@@ -133,7 +133,7 @@ class AcmHelperPlugin(Star):
         user_new_count = 0
         async with aiohttp.ClientSession() as session:
             if user['cf_handle']: user_new_count += await Crawler.fetch_cf_submissions(session, user, start_timestamp, self.db, self.config)
-            if user['luogu_id']: user_new_count += await Crawler.fetch_luogu_submissions(session, user, start_timestamp, self.db, self.config)
+            if user['luogu_id']: user_new_count += await Crawler.fetch_luogu_submission(session, user, start_timestamp, self.db, self.config)
         if user_new_count > 0: logger.info(f"    为用户 {user['name']} 同步了 {user_new_count} 条新记录。")
         await self.db.execute("UPDATE users SET last_sync_timestamp = ? WHERE qq_id = ?", (current_sync_time, user['qq_id'])); await self.db.commit()
 
@@ -165,8 +165,8 @@ class AcmHelperPlugin(Star):
         logger.info(f"  -> 为用户 {user['name']} 执行 [{days}天深度] 同步...")
         user_new_count = 0
         async with aiohttp.ClientSession() as session:
-            if user['cf_handle']: user_new_count += await Crawler.fetch_cf_submissions(session, user, start_timestamp, self.db, self.config)
-            if user['luogu_id']: user_new_count += await Crawler.fetch_luogu_submissions(session, user, start_timestamp, self.db, self.config)
+            if user['cf_handle']: user_new_count += await Crawler.fetch_cf_submissions_paginated(session, user, start_timestamp, self.db, self.config)
+            if user['luogu_id']: user_new_count += await Crawler.fetch_luogu_submission(session, user, start_timestamp, self.db, self.config)
         if user_new_count > 0: logger.info(f"    为用户 {user['name']} 同步了 {user_new_count} 条新记录。")
 
     async def _generate_rank_image(self, title: str, users_data: list) -> bytes | str:
@@ -257,6 +257,45 @@ class AcmHelperPlugin(Star):
     @acm_manager.command("后台关闭")
     async def cmd_stop_webui(self, event: AstrMessageEvent): msg = await self.stop_webui_process(); yield event.plain_result(msg)
     
+    @acm_manager.command("rank")
+    async def cmd_show_rank(self, event: AstrMessageEvent):
+        """生成近7日刷题量的文本排行榜"""
+        seven_days_ago = int(time.time()) - (7 * 24 * 60 * 60)
+        # 注意: 这里使用 COUNT(s.id) 而不是 COUNT(DISTINCT s.problem_id) 以匹配经典行为
+        query = "SELECT u.name, COUNT(s.id) as total_count FROM users u LEFT JOIN submissions s ON u.qq_id = s.user_qq_id WHERE s.submit_time >= ? GROUP BY u.qq_id HAVING total_count > 0 ORDER BY total_count DESC, u.name ASC LIMIT 10"
+        
+        async with self.db.execute(query, (seven_days_ago,)) as cursor:
+            top_ten = await cursor.fetchall()
+        if not top_ten:
+            yield event.plain_result("近7日排行榜暂无数据。")
+            return
+            
+        parts = ["🏆 近 7 日刷题排行榜 Top 10 🏆"]
+        emojis = ["🥇", "🥈", "🥉"] + [f"{i}." for i in range(4, 11)]
+        for i, user in enumerate(top_ten):
+            parts.append(f"{emojis[i]} {user['name']}: {user['total_count']} 题")
+        
+        yield event.plain_result("\n".join(parts))
+        
+    @acm_manager.command("rank all")
+    async def cmd_show_rank_all(self, event: AstrMessageEvent):
+        """生成生涯总刷题量的文本排行榜"""
+        query = "SELECT u.name, COUNT(s.id) as total_count FROM users u LEFT JOIN submissions s ON u.qq_id = s.user_qq_id GROUP BY u.qq_id HAVING total_count > 0 ORDER BY total_count DESC, u.name ASC LIMIT 10"
+        
+        async with self.db.execute(query) as cursor:
+            top_ten = await cursor.fetchall()
+        
+        if not top_ten:
+            yield event.plain_result("生涯总榜暂无数据。")
+            return
+            
+        parts = ["🏆 生涯总刷题量排行榜 Top 10 🏆"]
+        emojis = ["🥇", "🥈", "🥉"] + [f"{i}." for i in range(4, 11)]
+        for i, user in enumerate(top_ten):
+            parts.append(f"{emojis[i]} {user['name']}: {user['total_count']} 题")
+        
+        yield event.plain_result("\n".join(parts))
+
     @acm_manager.command("hourly")
     async def cmd_report_hourly(self, event: AstrMessageEvent):
         cmd_parts = event.message_str.strip().split()
@@ -328,7 +367,8 @@ class AcmHelperPlugin(Star):
         cmd_parts = event.message_str.strip().split()
         if len(cmd_parts) < 3: yield event.plain_result("⚠️ 参数错误，请输入QQ号。\n格式: /acm sync_user 12345"); return
         qq_id = cmd_parts[2].strip()
-        yield event.plain_result(f"收到指令，正在为用户 {qq_id} 执行一次同步任务..."); await self.sync_single_user(qq_id); yield event.plain_result(f"用户 {qq_id} 的同步任务已在后台执行完成！")
+        days = int(cmd_parts[3].strip())
+        yield event.plain_result(f"收到指令，正在为用户 {qq_id} 执行一次同步任务..."); await self.sync_single_user_for_days(qq_id,days); yield event.plain_result(f"用户 {qq_id} 的同步任务已在后台执行完成！")
 
     @acm_manager.command("del_user")
     @filter.permission_type(filter.PermissionType.ADMIN)
